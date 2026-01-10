@@ -127,7 +127,7 @@ B = [2  1                  B = 3 x 2
 
 Z = A @ B                  Z = 2 x 2
 
-
+```
 When backpropagation begins : 
 ```
 dZ = [1  1
