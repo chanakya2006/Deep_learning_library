@@ -49,5 +49,138 @@ Scalar Multiplication:
     std::cout << t1({0,0}) << " " << t1({0,1}) << std::endl;
     std::cout << t1({1,0}) << " " << t1({1,1}) << std::endl;
 
+build_topo in action :
+
+    Tensor t1{tensor_shape{{2,2}}, tensor_data{{1,2,3,4}},grad_flag{true}};
+    Tensor t2{tensor_shape{{2,2}}, tensor_data{{1,2,3,4}},grad_flag{true}};
+    Tensor t3 = t1 + t2;
+    Tensor t4 = t3 * 3.0f;
+    Tensor t5{tensor_shape{{2,2}}, tensor_data{{1,2,3,4}},grad_flag{true}};
+    Tensor t6 = t4 * t5;
+    std::cout << "Address of t1 : " << &t1 << std::endl;
+    std::cout << "Address of t2 : " << &t2 << std::endl;
+    std::cout << "Address of t3 : " << &t3 << std::endl;
+    std::cout << "Address of t4 : " << &t4 << std::endl;
+    std::cout << "Address of t5 : " << &t5 << std::endl;
+    std::cout << "Address of t6 : " << &t6 << std::endl;
+
+    std::vector<Tensor*> topo;
+    std::unordered_set<Tensor*> visited;
+    build_topo(&t6, topo, visited);
+    std::reverse(topo.begin(), topo.end());
+    for(auto x : topo){
+        std::cout << x << " " << std::endl;
+    }
 
 
+calculating gradient :
+
+    Tensor t{{3},{1,2,3},true};
+    Tensor t_half = t * t;
+    Tensor t1 = t_half.sum();
+    cout << "\n\n";
+    cout << "t address : " << &t << endl;
+    cout << "t_half address : " << &t_half << endl;
+    cout << "t1 address : " << &t1 << endl;
+    cout << "t1 parents address : " << t1.parents[0] << endl;
+    cout << "t_half parents address : ";
+    for(Tensor* parent : t_half.parents) cout << parent << " ";
+    cout << "\n\n "<<endl;
+    t1.backward();
+    cout << "\n\ngrad values of t_half are : ";
+    for(auto x : t_half.grad){
+        cout << x << " ";
+    }
+    cout << "\n";
+    cout << "grad values of t are : ";
+    for(auto x : t.grad){
+        std::cout << x << " "; 
+    }
+
+matmul grad working (square matrix): 
+
+    Tensor A{ tensor_shape{{2,2}}, tensor_data{{1,2,3,4}}, grad_flag{true} };
+    Tensor B{ tensor_shape{{2,2}}, tensor_data{{5,6,7,8}}, grad_flag{true} };
+
+    Tensor Z = A.matmul_2D(B);
+    Tensor Z_temp = Z.sum();
+    Z_temp.backward();
+
+    for(auto x : A.grad){
+        cout << x << " ";
+    }
+    cout << endl;
+    for(auto x : B.grad){
+        cout << x << " ";
+    }
+    cout << endl;
+
+matmul grad working ( non - square matrix):
+
+```
+A = [1  0  2               A = 2 x 3
+    -1  3  1]
+
+B = [2  1                  B = 3 x 2
+     0 -1
+     3  4]
+
+Z = A @ B                  Z = 2 x 2
+
+
+When backpropagation begins : 
+```
+dZ = [1  1
+      1  1]
+
+
+dA = dZ @ transpose_2D(B)
+
+dB = transpose_2D(A) @ dZ
+
+dA = [3 -1  7
+      3 -1  7]
+
+dB = [0  0
+      3  3
+      3  3]
+```
+
+```
+    Tensor A{ tensor_shape{{2,3}}, tensor_data{{1,0,2,-1,3,1}}, grad_flag{true} };
+    Tensor B{ tensor_shape{{3,2}}, tensor_data{{2,1,0,-1,3,4}}, grad_flag{true} };
+
+    Tensor Z = A.matmul_2D(B);
+
+    cout << "Z : ";
+    for(float x : Z.get_data()){
+        cout << x << " ";
+    }
+    cout << endl;
+
+    Tensor Z_temp = Z.sum();
+    Z_temp.backward();
+
+    cout << "A.grad : ";
+    for(auto x : A.grad){
+        cout << x << " ";
+    }
+    cout << endl;
+    
+    cout << "B.grad : ";
+    for(auto x : B.grad){
+        cout << x << " ";
+    }
+    cout << endl;
+```
+
+Dense layer basic example : 
+
+```
+    Tensor input({1,3},{1,2,3},true);
+    Dense D1(3,3);
+
+    Tensor out = D1.forward(input);
+
+    for(auto x : out.get_data()) cout << x << " ";
+```
