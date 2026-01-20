@@ -184,3 +184,47 @@ Dense layer basic example :
 
     for(auto x : out.get_data()) cout << x << " ";
 ```
+
+Tensor relu() example :
+```
+  Tensor t{{2, 2}, {-2, 20, 0.2, -100}, true};
+  Tensor t1 = t.relu();
+
+  cout << "Address of t : " << &t << endl;
+  cout << "Parents of t1 : ";
+  for (Tensor *parent : t1.parents)
+    cout << parent << endl;
+  cout << endl;
+
+  cout << "data of t1 : ";
+  for (float x : t1.get_data()) {
+    cout << x << " ";
+  }
+  cout << endl;
+
+  t1.sum().backward();
+
+  cout << "gradeints of t : ";
+  for (float grads : t.grad)
+    cout << grads << " ";
+  cout << endl;
+```
+
+Simple single loop model :
+
+```
+  Tensor x({1, 2}, {1.0f, 2.0f}, true);
+
+  Dense fc1(2, 3);
+  ReLU relu1;
+  Dense fc2(3, 1);
+  Sigmoid sig1;
+
+  Tensor y = fc1.forward(x);
+  Tensor y1 = relu1.forward(y);
+  Tensor y2 = fc2.forward(y1);
+  Tensor y3 = sig1.forward(y2);
+
+  Tensor loss = y3.sum();
+  loss.backward();
+```
