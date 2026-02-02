@@ -227,4 +227,6 @@ Simple single loop model :
 
   Tensor loss = y3.sum();
   loss.backward();
+  
+  x.zero_grad();
 ```
