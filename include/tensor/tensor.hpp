@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vector>
 #include <functional>
 #include <unordered_set>
 #include <vector>
@@ -33,8 +32,7 @@ public:
          grad_flag input_grad_flag = grad_flag{false});
 
   Tensor(const std::vector<int> &input_shape,
-         const std::vector<float> &input_data = {},
-         bool grad_flag = false);
+         const std::vector<float> &input_data = {}, bool grad_flag = false);
 
   std::vector<int> get_shape();
   std::vector<float> get_data();
@@ -52,17 +50,15 @@ public:
   Tensor operator-(Tensor &other);
   Tensor operator*(float scalar);
   Tensor operator*(Tensor &other);
-  
+
   Tensor relu();
   Tensor sigmoid();
   Tensor log_on_Tensor();
-  
+
   Tensor sum();
 
   void build_topo(Tensor *t, std::vector<Tensor *> &topo,
                   std::unordered_set<Tensor *> &visited);
-
-
 
   void backward();
   void zero_grad();

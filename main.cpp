@@ -1,8 +1,9 @@
+#include "loss/bce.hpp"
 #include "nn/activations.hpp"
 #include "nn/dense.hpp"
 #include "optim/sgd.hpp"
+#include "optim/sgdmomentum.hpp"
 #include "utils/helpers.hpp"
-#include "loss/bce.hpp"
 #include <iostream>
 
 using namespace std;
@@ -11,19 +12,19 @@ int main() {
   vector<vector<float>> X = {{0, 0}, {0, 1}, {1, 0}, {1, 1}};
   vector<vector<float>> Y = {{0}, {1}, {1}, {0}};
 
-  Dense fc1(2, 1);
+  Dense fc1(2, 4);
   Sigmoid sig1;
-  Dense fc2(1, 1);
+  Dense fc2(4, 1);
   Sigmoid sig2;
 
   vector<Layer *> model = {&fc1, &fc2};
   vector<Tensor *> parameters = get_all_parameters(model);
 
-  SGD sgd(1e-3f);
+  SGDMomentum sgdmomentum(1e-3f);
 
   Binary_cross_entropy bce;
 
-  for (int epoch = 0; epoch < 1000000; epoch++) {
+  for (int epoch = 0; epoch < 1392200; epoch++) {
     float epoch_loss = 0;
 
     for (int i = 0; i < 4; i++) {
@@ -39,8 +40,8 @@ int main() {
       epoch_loss += loss.get_data()[0];
 
       loss.backward();
-      sgd.step(parameters);
-      sgd.zero_grad(parameters);
+      sgdmomentum.step(parameters);
+      sgdmomentum.zero_grad(parameters);
     }
 
     if (epoch % 200 == 0)
@@ -89,8 +90,8 @@ int main() {
   return 0;
 }
 
-
-// I have set bias to random values instead of 0 revert this change, if needed.
+// I have set bias to random values instead of 0 revert this change,
+// if needed
 
 // Add the ability to save and load models from files.
 
