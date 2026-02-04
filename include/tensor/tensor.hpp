@@ -53,6 +53,7 @@ public:
 
   Tensor relu();
   Tensor sigmoid();
+  Tensor leaky_relu(float alpha);
   Tensor log_on_Tensor();
 
   Tensor sum();

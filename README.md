@@ -313,5 +313,3 @@ XOR problem prediction :
 
   cout << "[1,1] -> " << y3.get_data()[0] << " -> ~0" << endl;
 ```
-```
-```

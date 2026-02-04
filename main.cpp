@@ -1,9 +1,10 @@
 #include "loss/bce.hpp"
 #include "nn/activations.hpp"
 #include "nn/dense.hpp"
-#include "optim/sgd.hpp"
 #include "optim/sgdmomentum.hpp"
+#include "tensor/tensor.hpp"
 #include "utils/helpers.hpp"
+#include <climits>
 #include <iostream>
 
 using namespace std;
@@ -13,18 +14,18 @@ int main() {
   vector<vector<float>> Y = {{0}, {1}, {1}, {0}};
 
   Dense fc1(2, 4);
-  Sigmoid sig1;
+  LeakyReLU leaky;
   Dense fc2(4, 1);
   Sigmoid sig2;
 
   vector<Layer *> model = {&fc1, &fc2};
   vector<Tensor *> parameters = get_all_parameters(model);
 
-  SGDMomentum sgdmomentum(1e-3f);
+  SGDMomentum sgdmomentum(1e-3f); // Optimizer
 
-  Binary_cross_entropy bce;
+  Binary_cross_entropy bce; // Loss function
 
-  for (int epoch = 0; epoch < 1392200; epoch++) {
+  for (int epoch = 0; epoch < 10000; epoch++) {
     float epoch_loss = 0;
 
     for (int i = 0; i < 4; i++) {
@@ -32,7 +33,7 @@ int main() {
       Tensor y_true({1, 1}, Y[i], false);
 
       Tensor y = fc1.forward(x);
-      Tensor y1 = sig1.forward(y);
+      Tensor y1 = leaky.forward(y);
       Tensor y2 = fc2.forward(y1);
       Tensor y3 = sig2.forward(y2);
 
@@ -52,7 +53,7 @@ int main() {
   Tensor x({1, 2}, {0, 0}, false);
 
   Tensor y = fc1.forward(x);
-  Tensor y1 = sig1.forward(y);
+  Tensor y1 = leaky.forward(y);
   Tensor y2 = fc2.forward(y1);
   Tensor y3 = sig2.forward(y2);
 
@@ -62,7 +63,7 @@ int main() {
   x = Tensor({1, 2}, {0, 1}, false);
 
   y = fc1.forward(x);
-  y1 = sig1.forward(y);
+  y1 = leaky.forward(y);
   y2 = fc2.forward(y1);
   y3 = sig2.forward(y2);
 
@@ -72,7 +73,7 @@ int main() {
   x = Tensor({1, 2}, {1, 0}, false);
 
   y = fc1.forward(x);
-  y1 = sig1.forward(y);
+  y1 = leaky.forward(y);
   y2 = fc2.forward(y1);
   y3 = sig2.forward(y2);
 
@@ -82,7 +83,7 @@ int main() {
   x = Tensor({1, 2}, {1, 1}, false);
 
   y = fc1.forward(x);
-  y1 = sig1.forward(y);
+  y1 = leaky.forward(y);
   y2 = fc2.forward(y1);
   y3 = sig2.forward(y2);
 
@@ -95,16 +96,10 @@ int main() {
 
 // Add the ability to save and load models from files.
 
-// Arrange all of the classes in proper file structure.
-
 // Implement :
-// SGD + Momentum
 // ADAM
 // Leaky ReLU
 // Tanh
-
-// also add runtime_error when you call Binary_cross_entropy when you pass a
-// Tensor of more than size 1.
 
 // in layer's the Tensor is begin returned as copy
 // instead return the pointer to the answer which

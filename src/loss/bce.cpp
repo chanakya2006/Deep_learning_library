@@ -2,7 +2,7 @@
 #include <stdexcept>
 
 Tensor Binary_cross_entropy::apply(Tensor &pred, Tensor &target) {
-  if (pred.get_data().size() != 1)
+  if (pred.get_data().size() != 1 || target.get_data().size() != 1)
     throw std::runtime_error("BCE expects scalar prediction");
 
   pred_log = pred.log_on_Tensor();
