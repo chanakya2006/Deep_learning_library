@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
 #include <numeric>
 #include <stdexcept>
@@ -297,6 +298,28 @@ Tensor Tensor::leaky_relu(float alpha) {
       Tensor &A = *self.parents[0];
       for (size_t i = 0; i < A.grad.size(); i++) {
         A.grad[i] += (A.data[i] >= 0 ? 1.0f : alpha) * self.grad[i];
+      }
+    };
+  }
+
+  return ans;
+}
+
+Tensor Tensor::tanh() {
+  Tensor ans(tensor_shape{shape}, tensor_data{}, grad_flag{requires_grad});
+
+  vector<float> &ans_data_pointer = *ans.get_data_pointer();
+
+  for (size_t i = 0; i < ans_data_pointer.size(); i++) {
+    ans_data_pointer[i] = std::tanh(data[i]);
+  }
+
+  if (requires_grad) {
+    ans.parents = {this};
+    ans.backward_fn = [](Tensor &self) {
+      Tensor &A = *self.parents[0];
+      for (size_t i = 0; i < A.grad.size(); i++) {
+        A.grad[i] += (1 - std::pow(self.data[i], 2)) * self.grad[i];
       }
     };
   }

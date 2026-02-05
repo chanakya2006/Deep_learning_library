@@ -14,7 +14,8 @@ int main() {
   vector<vector<float>> Y = {{0}, {1}, {1}, {0}};
 
   Dense fc1(2, 4);
-  LeakyReLU leaky;
+  // LeakyReLU leaky;
+  Tanh tanh_layer;
   Dense fc2(4, 1);
   Sigmoid sig2;
 
@@ -33,7 +34,8 @@ int main() {
       Tensor y_true({1, 1}, Y[i], false);
 
       Tensor y = fc1.forward(x);
-      Tensor y1 = leaky.forward(y);
+      // Tensor y1 = leaky.forward(y);
+      Tensor y1 = tanh_layer.forward(y);
       Tensor y2 = fc2.forward(y1);
       Tensor y3 = sig2.forward(y2);
 
@@ -53,7 +55,8 @@ int main() {
   Tensor x({1, 2}, {0, 0}, false);
 
   Tensor y = fc1.forward(x);
-  Tensor y1 = leaky.forward(y);
+  // Tensor y1 = leaky.forward(y);
+  Tensor y1 = tanh_layer.forward(y);
   Tensor y2 = fc2.forward(y1);
   Tensor y3 = sig2.forward(y2);
 
@@ -63,7 +66,8 @@ int main() {
   x = Tensor({1, 2}, {0, 1}, false);
 
   y = fc1.forward(x);
-  y1 = leaky.forward(y);
+  // y1 = leaky.forward(y);
+  y1 = tanh_layer.forward(y);
   y2 = fc2.forward(y1);
   y3 = sig2.forward(y2);
 
@@ -73,7 +77,8 @@ int main() {
   x = Tensor({1, 2}, {1, 0}, false);
 
   y = fc1.forward(x);
-  y1 = leaky.forward(y);
+  // y1 = leaky.forward(y);
+  y1 = tanh_layer.forward(y);
   y2 = fc2.forward(y1);
   y3 = sig2.forward(y2);
 
@@ -83,7 +88,8 @@ int main() {
   x = Tensor({1, 2}, {1, 1}, false);
 
   y = fc1.forward(x);
-  y1 = leaky.forward(y);
+  // y1 = leaky.forward(y);
+  y1 = tanh_layer.forward(y);
   y2 = fc2.forward(y1);
   y3 = sig2.forward(y2);
 
@@ -97,8 +103,8 @@ int main() {
 // Add the ability to save and load models from files.
 
 // Implement :
+// RSMprop
 // ADAM
-// Leaky ReLU
 // Tanh
 
 // in layer's the Tensor is begin returned as copy
