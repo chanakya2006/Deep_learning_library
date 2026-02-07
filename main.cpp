@@ -1,7 +1,7 @@
 #include "loss/bce.hpp"
 #include "nn/activations.hpp"
 #include "nn/dense.hpp"
-#include "optim/sgdmomentum.hpp"
+#include "optim/Adam.hpp"
 #include "tensor/tensor.hpp"
 #include "utils/helpers.hpp"
 #include <climits>
@@ -22,7 +22,7 @@ int main() {
   vector<Layer *> model = {&fc1, &fc2};
   vector<Tensor *> parameters = get_all_parameters(model);
 
-  SGDMomentum sgdmomentum(1e-3f); // Optimizer
+  Adam adam(1e-3f); // Optimizer
 
   Binary_cross_entropy bce; // Loss function
 
@@ -43,8 +43,8 @@ int main() {
       epoch_loss += loss.get_data()[0];
 
       loss.backward();
-      sgdmomentum.step(parameters);
-      sgdmomentum.zero_grad(parameters);
+      adam.step(parameters);
+      adam.zero_grad(parameters);
     }
 
     if (epoch % 200 == 0)
@@ -97,15 +97,10 @@ int main() {
   return 0;
 }
 
-// I have set bias to random values instead of 0 revert this change,
-// if needed
-
 // Add the ability to save and load models from files.
 
 // Implement :
 // RSMprop
-// ADAM
-// Tanh
 
 // in layer's the Tensor is begin returned as copy
 // instead return the pointer to the answer which

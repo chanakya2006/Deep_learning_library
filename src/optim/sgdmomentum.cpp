@@ -22,12 +22,12 @@ void SGDMomentum::step(vector<Tensor *> &parameters) {
       velocity.resize(param->grad.size(), 0.0f);
     }
 
-    vector<float> &para_data_poitner = *param->get_data_pointer();
+    vector<float> &param_data_pointer = *param->get_data_pointer();
     vector<float> &param_grad = param->grad;
 
-    for (size_t i = 0; i < para_data_poitner.size(); i++) {
+    for (size_t i = 0; i < param_data_pointer.size(); i++) {
       velocity[i] = beta * velocity[i] + param_grad[i];
-      para_data_poitner[i] -= lr * velocity[i];
+      param_data_pointer[i] -= lr * velocity[i];
     }
   }
 }
