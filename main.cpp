@@ -21,123 +21,70 @@ int main() {
   model.add(make_unique<Dense>(4, 1));
   model.add(make_unique<Sigmoid>());
 
+  vector<Tensor *> parameters = model.get_parameters();
+
   Binary_cross_entropy bce;
 
   Adam adam;
 
-  Tensor x({1, 2}, {0, 1}, false);
+  vector<vector<float>> X = {{0, 0}, {0, 1}, {1, 0}, {1, 1}};
+  vector<vector<float>> Y = {{0}, {1}, {1}, {}};
 
-  Tensor pred = model.forward(x);
+  for (int epoch = 0; epoch < 10000; epoch++) {
+    float epoch_loss = 0;
 
-  Tensor y_true{{
-                    1,
-                    1,
-                },
-                {1},
-                false};
+    for (int i = 0; i < 4; i++) {
+      Tensor x({1, 2}, X[i], false);
+      Tensor y_true({1, 1}, Y[i], false);
 
-  vector<Tensor *> parameters = model.get_parameters();
+      Tensor y_pred = model.forward(x);
 
-  Tensor loss = bce.apply(pred, y_true);
-  loss.backward();
+      Tensor loss = bce.apply(y_pred, y_true);
+      epoch_loss += loss.get_data()[0];
 
-  adam.step(parameters);
-  adam.zero_grad(parameters);
+      loss.backward();
+      adam.step(parameters);
+      adam.zero_grad(parameters);
+    }
+
+    if (epoch % 200 == 0)
+      cout << "Epoch " << epoch << " loss = " << epoch_loss / 4 << endl;
+  }
+  // Model prediction for [0,0]
+  Tensor x({1, 2}, {0, 0}, false);
+
+  Tensor y_pred = model.forward(x);
+
+  cout << "[0,0] -> " << y_pred.get_data()[0] << " -> ~0" << endl;
+
+  // Model prediction for [0,1]
+  x = Tensor({1, 2}, {0, 1}, false);
+
+  y_pred = model.forward(x);
+
+  cout << "[0,1] -> " << y_pred.get_data()[0] << " -> ~1" << endl;
+
+  // Model prediction for [1,0]
+  x = Tensor({1, 2}, {1, 0}, false);
+
+  y_pred = model.forward(x);
+
+  cout << "[1,0] -> " << y_pred.get_data()[0] << " -> ~1" << endl;
+
+  // Model prediction for [1,1]
+  x = Tensor({1, 2}, {1, 1}, false);
+
+  y_pred = model.forward(x);
+
+  cout << "[1,1] -> " << y_pred.get_data()[0] << " -> ~0" << endl;
   return 0;
 }
 
-// int main() {
-//   vector<vector<float>> X = {{0, 0}, {0, 1}, {1, 0}, {1, 1}};
-//   vector<vector<float>> Y = {{0}, {1}, {1}, {0}};
-//
-//   Dense fc1(2, 4);
-//   // LeakyReLU leaky;
-//   Tanh tanh_layer;
-//   Dense fc2(4, 1);
-//   Sigmoid sig2;
-//
-//   vector<Layer *> model = {&fc1, &fc2};
-//   vector<Tensor *> parameters = get_all_parameters(model);
-//
-//   Adam adam(1e-3f); // Optimizer
-//
-//   Binary_cross_entropy bce; // Loss function
-//
-//   for (int epoch = 0; epoch < 10000; epoch++) {
-//     float epoch_loss = 0;
-//
-//     for (int i = 0; i < 4; i++) {
-//       Tensor x({1, 2}, X[i], false);
-//       Tensor y_true({1, 1}, Y[i], false);
-//
-//       Tensor y = fc1.forward(x);
-//       // Tensor y1 = leaky.forward(y);
-//       Tensor y1 = tanh_layer.forward(y);
-//       Tensor y2 = fc2.forward(y1);
-//       Tensor y3 = sig2.forward(y2);
-//
-//       Tensor loss = bce.apply(y3, y_true);
-//       epoch_loss += loss.get_data()[0];
-//
-//       loss.backward();
-//       adam.step(parameters);
-//       adam.zero_grad(parameters);
-//     }
-//
-//     if (epoch % 200 == 0)
-//       cout << "Epoch " << epoch << " loss = " << epoch_loss / 4 << endl;
-//   }
-//
-//   // Model prediction for [0,0]
-//   Tensor x({1, 2}, {0, 0}, false);
-//
-//   Tensor y = fc1.forward(x);
-//   // Tensor y1 = leaky.forward(y);
-//   Tensor y1 = tanh_layer.forward(y);
-//   Tensor y2 = fc2.forward(y1);
-//   Tensor y3 = sig2.forward(y2);
-//
-//   cout << "[0,0] -> " << y3.get_data()[0] << " -> ~0" << endl;
-//
-//   // Model prediction for [0,1]
-//   x = Tensor({1, 2}, {0, 1}, false);
-//
-//   y = fc1.forward(x);
-//   // y1 = leaky.forward(y);
-//   y1 = tanh_layer.forward(y);
-//   y2 = fc2.forward(y1);
-//   y3 = sig2.forward(y2);
-//
-//   cout << "[0,1] -> " << y3.get_data()[0] << " -> ~1" << endl;
-//
-//   // Model prediction for [1,0]
-//   x = Tensor({1, 2}, {1, 0}, false);
-//
-//   y = fc1.forward(x);
-//   // y1 = leaky.forward(y);
-//   y1 = tanh_layer.forward(y);
-//   y2 = fc2.forward(y1);
-//   y3 = sig2.forward(y2);
-//
-//   cout << "[1,0] -> " << y3.get_data()[0] << " -> ~1" << endl;
-//
-//   // Model prediction for [1,1]
-//   x = Tensor({1, 2}, {1, 1}, false);
-//
-//   y = fc1.forward(x);
-//   // y1 = leaky.forward(y);
-//   y1 = tanh_layer.forward(y);
-//   y2 = fc2.forward(y1);
-//   y3 = sig2.forward(y2);
-//
-//   cout << "[1,1] -> " << y3.get_data()[0] << " -> ~0" << endl;
-//   return 0;
-// }
-//
 // Add the ability to save and load models from files.
 
 // Implement :
 // RSMprop
+// Save and load model from a raw binary file
 
 // in layer's the Tensor is begin returned as copy
 // instead return the pointer to the answer which
