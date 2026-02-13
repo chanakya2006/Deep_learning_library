@@ -1,6 +1,8 @@
 #pragma once
 
+#include <fstream>
 #include <functional>
+#include <string>
 #include <unordered_set>
 #include <vector>
 
@@ -64,6 +66,8 @@ public:
 
   void backward();
   void zero_grad();
+
+  void save_tensor(std::ofstream &out);
 
   ~Tensor();
 };

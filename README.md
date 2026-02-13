@@ -379,3 +379,23 @@ XOR prediction using model class :
   y_pred = model.forward(x);
 
 ```
+
+Saving and loading a Tensor from file
+
+```
+  // Saving a Tensor to a binary file
+  Tensor t({2, 2}, {2, 3, 4, 5}, true);
+
+  std::ofstream out("temp.dat", std::ios::binary);
+
+  t.save_tensor(out);
+
+  out.close();
+
+  // Loading the Tensor frome the same file
+  std::ifstream in("temp.dat", std::ios::binary);
+
+  Tensor t_loaded = load_tensor(in);
+
+  in.close();
+```

@@ -1,22 +1,20 @@
 #include "tensor/tensor.hpp"
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <numeric>
 #include <stdexcept>
-#include <cstdint>
 
 using namespace std;
 
-Tensor::Tensor(const tensor_shape &input_shape,
-               const tensor_data &input_data,
+Tensor::Tensor(const tensor_shape &input_shape, const tensor_data &input_data,
                grad_flag input_grad_flag)
-    : shape(input_shape.shape),
-      data(input_data.data),
+    : shape(input_shape.shape), data(input_data.data),
       requires_grad(input_grad_flag.flag) {
 
   uint_least64_t expected_size = 1;
 
-  for (auto dimension : shape) 
+  for (auto dimension : shape)
     expected_size *= dimension;
 
   if (!data.empty()) {
@@ -30,16 +28,13 @@ Tensor::Tensor(const tensor_shape &input_shape,
     grad.resize(expected_size, 0.0f);
 }
 
-Tensor::Tensor(const vector<int> &input_shape,
-               const vector<float> &input_data,
+Tensor::Tensor(const vector<int> &input_shape, const vector<float> &input_data,
                bool grad_flag)
-    : shape(input_shape),
-      data(input_data),
-      requires_grad(grad_flag) {
+    : shape(input_shape), data(input_data), requires_grad(grad_flag) {
 
   uint_least64_t expected_size = 1;
-  
-  for (auto dimension : shape) 
+
+  for (auto dimension : shape)
     expected_size *= dimension;
 
   if (!data.empty()) {
@@ -82,7 +77,8 @@ float Tensor::operator()(vector<int> idx) const {
 
 void Tensor::build_topo(Tensor *t, vector<Tensor *> &topo,
                         unordered_set<Tensor *> &visited) {
-  if (visited.count(t)) return;
+  if (visited.count(t))
+    return;
   visited.insert(t);
   for (auto parents : t->parents)
     build_topo(parents, topo, visited);
@@ -110,6 +106,27 @@ void Tensor::backward() {
 void Tensor::zero_grad() {
   if (requires_grad)
     fill(grad.begin(), grad.end(), 0.0f);
+}
+
+void Tensor::save_tensor(std::ofstream &out) {
+
+  // Writing shape
+  size_t size_of_shape = shape.size();
+  out.write(reinterpret_cast<const char *>(&size_of_shape),
+            sizeof(size_of_shape));
+  out.write(reinterpret_cast<const char *>(shape.data()),
+            size_of_shape * sizeof(int));
+
+  // Writing data
+  size_t size_of_data = data.size();
+  out.write(reinterpret_cast<const char *>(&size_of_data),
+            sizeof(size_of_data));
+  out.write(reinterpret_cast<const char *>(data.data()),
+            size_of_data * sizeof(float));
+
+  // Writing bool
+  out.write(reinterpret_cast<const char *>(&requires_grad),
+            sizeof(requires_grad));
 }
 
 Tensor::~Tensor() {}
