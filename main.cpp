@@ -1,45 +1,64 @@
-#include "loss/bce.hpp"
-#include "model/sequential.hpp"
-#include "nn/activations.hpp"
 #include "nn/dense.hpp"
-#include "optim/Adam.hpp"
+#include "nn/layer.hpp"
 #include "tensor/tensor.hpp"
 #include "utils/helpers.hpp"
-#include <chrono>
 #include <climits>
-#include <cstddef>
 #include <fstream>
 #include <iostream>
-#include <memory>
-#include <type_traits>
+#include <limits>
 #include <vector>
 
 using namespace std;
 
 int main() {
-  // Saving a Tensor to a binary file
-  Tensor t({2, 2}, {2, 3, 4, 5}, true);
 
+  // When defining and Implementing the function for loading a layer from file
+  // return the layer using
+  //
+  // unique_ptr<Layer>
+  //
+  // as this not only line ups with way they are stored in model class
+  // but simplifies the way we have to handle differnt layer.
+
+  Dense d{4, 5};
+
+  // Writing to file
   std::ofstream out("temp.dat", std::ios::binary);
 
-  t.save_tensor(out);
+  d.save_layer(out);
 
   out.close();
 
-  // Loading the Tensor frome the same file
+  // Reading from file
+
+  // reading tag
+  char tag[SIZE_OF_LAYER_CHAR_TAG];
+
   std::ifstream in("temp.dat", std::ios::binary);
 
-  Tensor t_loaded = load_tensor(in);
+  in.read(reinterpret_cast<char *>(tag), SIZE_OF_LAYER_CHAR_TAG);
+
+  // loading the tensor appropriately
+  Tensor W = load_tensor(in);
+  Tensor b = load_tensor(in);
+  Tensor input_matmul_W = load_tensor(in);
+  Tensor W_plus_bias = load_tensor(in);
 
   in.close();
 
   return 0;
 }
 
+// As each layer has different number of tensor we must know beforehand what
+// type layer we are going to read, so when saving the layer I write the type of
+// layer it is (tag) and when reading i first check which type of layer it is
+// then allocate tensors appropriately
+
 // Implement :
 // RSMprop
 // Save and load model from a raw binary file
 
-// in layer's the Tensor is begin returned as copy
-// instead return the pointer to the answer which
-// is being stored as a member variable.
+// loading functions of model, layers, and tensors are defined in helpers.hpp
+// and Implementend in helpers.cpp
+//
+// If needed move them to appropriate files

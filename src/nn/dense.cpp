@@ -1,11 +1,12 @@
 #include "nn/dense.hpp"
+#include "nn/layer.hpp"
+#include <cstddef>
 #include <cstdlib>
 
 using namespace std;
 
 Dense::Dense(int in_features, int out_features)
-    : W({in_features, out_features}, {}, true),
-      b({1, out_features}, {}, true),
+    : W({in_features, out_features}, {}, true), b({1, out_features}, {}, true),
       input_matmul_W({1, out_features}, {}, true),
       W_plus_bias({1, out_features}, {}, true) {
 
@@ -21,6 +22,16 @@ Tensor Dense::forward(Tensor &input) {
   return W_plus_bias;
 }
 
-vector<Tensor *> Dense::parameters() {
-  return {&W, &b};
-}
+vector<Tensor *> Dense::parameters() { return {&W, &b}; }
+
+void Dense::save_layer(std::ofstream &out) {
+  // Writing the tag
+  char tag[SIZE_OF_LAYER_CHAR_TAG] = "dense";
+  out.write(reinterpret_cast<const char *>(tag), SIZE_OF_LAYER_CHAR_TAG);
+
+  // Writing the tensors
+  W.save_tensor(out);
+  b.save_tensor(out);
+  input_matmul_W.save_tensor(out);
+  W_plus_bias.save_tensor(out);
+};
