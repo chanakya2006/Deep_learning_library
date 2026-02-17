@@ -1,3 +1,4 @@
+#include "nn/activations.hpp"
 #include "nn/dense.hpp"
 #include "nn/layer.hpp"
 #include "tensor/tensor.hpp"
@@ -6,43 +7,38 @@
 #include <fstream>
 #include <iostream>
 #include <limits>
+#include <memory>
 #include <vector>
 
 using namespace std;
 
 int main() {
 
-  // When defining and Implementing the function for loading a layer from file
-  // return the layer using
-  //
-  // unique_ptr<Layer>
-  //
-  // as this not only line ups with way they are stored in model class
-  // but simplifies the way we have to handle differnt layer.
-
-  Dense d{4, 5};
+  Dense dense{4, 5};
+  ReLU relu;
+  Sigmoid sig;
+  LeakyReLU leakyrelu{0.2};
+  Tanh tanh;
 
   // Writing to file
   std::ofstream out("temp.dat", std::ios::binary);
 
-  d.save_layer(out);
+  dense.save_layer(out);
+  relu.save_layer(out);
+  sig.save_layer(out);
+  leakyrelu.save_layer(out);
+  tanh.save_layer(out);
 
   out.close();
 
   // Reading from file
-
-  // reading tag
-  char tag[SIZE_OF_LAYER_CHAR_TAG];
-
   std::ifstream in("temp.dat", std::ios::binary);
 
-  in.read(reinterpret_cast<char *>(tag), SIZE_OF_LAYER_CHAR_TAG);
-
-  // loading the tensor appropriately
-  Tensor W = load_tensor(in);
-  Tensor b = load_tensor(in);
-  Tensor input_matmul_W = load_tensor(in);
-  Tensor W_plus_bias = load_tensor(in);
+  unique_ptr<Layer> dense_copy = load_layer(in);
+  unique_ptr<Layer> relu_copy = load_layer(in);
+  unique_ptr<Layer> sig_copy = load_layer(in);
+  unique_ptr<Layer> leakyrelu_copy = load_layer(in);
+  unique_ptr<Layer> tanh_copy = load_layer(in);
 
   in.close();
 

@@ -10,4 +10,4 @@ std::vector<Tensor *> get_all_parameters(std::vector<Layer *> &layers);
 
 Tensor load_tensor(std::ifstream &in);
 
-// unique_ptr<Layer> load_layer(std::ifstream &in);
+unique_ptr<Layer> load_layer(std::ifstream &in);

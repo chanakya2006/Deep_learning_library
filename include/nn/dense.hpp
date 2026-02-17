@@ -3,13 +3,12 @@
 #include <fstream>
 
 class Dense : public Layer {
-private:
+public:
   Tensor W;
   Tensor b;
   Tensor input_matmul_W;
   Tensor W_plus_bias;
 
-public:
   Dense(int in_features, int out_features);
   Tensor forward(Tensor &input) override;
   void save_layer(std::ofstream &out) override;

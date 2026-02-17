@@ -392,10 +392,42 @@ Saving and loading a Tensor from file
 
   out.close();
 
-  // Loading the Tensor frome the same file
+  // Loading the Tensor from the same file
   std::ifstream in("temp.dat", std::ios::binary);
 
   Tensor t_loaded = load_tensor(in);
+
+  in.close();
+```
+
+Saving and loading layers from a binary file 
+
+```
+  Dense dense{4, 5};
+  ReLU relu;
+  Sigmoid sig;
+  LeakyReLU leakyrelu{0.2};
+  Tanh tanh;
+
+  // Writing to file
+  std::ofstream out("temp.dat", std::ios::binary);
+
+  dense.save_layer(out);
+  relu.save_layer(out);
+  sig.save_layer(out);
+  leakyrelu.save_layer(out);
+  tanh.save_layer(out);
+
+  out.close();
+
+  // Reading from file
+  std::ifstream in("temp.dat", std::ios::binary);
+
+  unique_ptr<Layer> dense_copy = load_layer(in);
+  unique_ptr<Layer> relu_copy = load_layer(in);
+  unique_ptr<Layer> sig_copy = load_layer(in);
+  unique_ptr<Layer> leakyrelu_copy = load_layer(in);
+  unique_ptr<Layer> tanh_copy = load_layer(in);
 
   in.close();
 ```
