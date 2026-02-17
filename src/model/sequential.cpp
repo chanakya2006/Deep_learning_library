@@ -4,6 +4,7 @@
 #include "tensor/tensor.hpp"
 #include "utils/helpers.hpp"
 #include <cstddef>
+#include <fstream>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -27,4 +28,19 @@ vector<Tensor *> Sequential::get_parameters() {
     out_layer.push_back(layers[i].get());
   }
   return get_all_parameters(out_layer);
+}
+
+void Sequential::save(string file) {
+  std::ofstream out(file, std::ios::binary);
+
+  // writing the number of layers
+  size_t num_of_layer = layers.size();
+  out.write(reinterpret_cast<const char *>(&num_of_layer),
+            sizeof(num_of_layer));
+
+  for (size_t i = 0; i < layers.size(); i++) {
+    layers[i]->save_layer(out);
+  }
+
+  out.close();
 }

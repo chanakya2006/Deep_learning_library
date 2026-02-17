@@ -1,4 +1,5 @@
 #include "utils/helpers.hpp"
+#include "model/sequential.hpp"
 #include "nn/activations.hpp"
 #include "nn/dense.hpp"
 #include "nn/layer.hpp"
@@ -78,4 +79,22 @@ unique_ptr<Layer> load_layer(std::ifstream &in) {
   }
 
   return nullptr; // Throw corrupted file exception here
+}
+
+Sequential load_Sequential_model(string file) {
+  Sequential model;
+
+  std::ifstream in(file, std::ios::binary);
+
+  // Reading the number of layers
+  size_t num_of_layers;
+  in.read(reinterpret_cast<char *>(&num_of_layers), sizeof(num_of_layers));
+
+  for (size_t i = 0; i < num_of_layers; i++) {
+    model.add(load_layer(in));
+  }
+
+  in.close();
+
+  return model;
 }

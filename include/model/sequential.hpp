@@ -17,5 +17,6 @@ public:
   Sequential() = default;
   void add(unique_ptr<Layer> layer);
   Tensor forward(Tensor &input);
+  void save(string file_name);
   vector<Tensor *> get_parameters();
 };
