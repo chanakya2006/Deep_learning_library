@@ -17,8 +17,8 @@
 using namespace std;
 
 int main() {
-
   Sequential model;
+
   model.add(make_unique<Dense>(2, 4));
   model.add(make_unique<Tanh>());
   model.add(make_unique<Dense>(4, 1));
@@ -30,15 +30,17 @@ int main() {
 
   Adam adam;
 
-  vector<vector<float>> X = {{0, 0}, {0, 1}, {1, 0}, {1, 1}};
-  vector<vector<float>> Y = {{0}, {1}, {1}, {}};
+  csv_loader loader("XOR.csv", 2);
 
   for (int epoch = 0; epoch < 10000; epoch++) {
     float epoch_loss = 0;
 
-    for (int i = 0; i < 4; i++) {
-      Tensor x({1, 2}, X[i], false);
-      Tensor y_true({1, 1}, Y[i], false);
+    for (size_t i = 0; i < loader.num_of_rows; i++) {
+
+      ::data input_and_pred = loader.load_next();
+
+      Tensor x({1, 2}, input_and_pred.input, false);
+      Tensor y_true({1, 1}, input_and_pred.output, false);
 
       Tensor y_pred = model.forward(x);
 
@@ -50,8 +52,12 @@ int main() {
       adam.zero_grad(parameters);
     }
 
-    if (epoch % 200 == 0)
-      cout << "Epoch " << epoch << " loss = " << epoch_loss / 4 << endl;
+    loader.reset();
+
+    if (epoch % 200 == 0) {
+      cout << "Epoch " << epoch << " loss = " << epoch_loss / loader.num_of_rows
+           << endl;
+    }
   }
 
   // Saving model
@@ -93,7 +99,6 @@ int main() {
 
 // Implement :
 // RSMprop
-// Save and load model from a raw binary file
 
 // loading functions of model, layers, and tensors are defined in
 // helpers.hpp and Implementend in helpers.cpp

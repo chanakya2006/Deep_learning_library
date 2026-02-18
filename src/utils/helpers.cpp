@@ -8,6 +8,7 @@
 #include <cstring>
 #include <fstream>
 #include <memory>
+#include <sstream>
 
 std::vector<Tensor *> get_all_parameters(std::vector<Layer *> &layers) {
   std::vector<Tensor *> params;
@@ -97,4 +98,27 @@ Sequential load_Sequential_model(string file) {
   in.close();
 
   return model;
+}
+
+::data csv_loader::load_next() {
+  std::string line;
+  vector<float> input;
+  vector<float> output;
+  if (std::getline(in, line)) {
+    std::stringstream ss(line);
+    std::string cell;
+    while (std::getline(ss, cell, ',')) {
+      if (input.size() < split_at) {
+        input.push_back(stof(cell));
+      } else {
+        output.push_back(stof(cell));
+      }
+    }
+  }
+  return {input, output};
+}
+
+void csv_loader::reset() {
+  in.clear();
+  in.seekg(0, std::ios::beg);
 }

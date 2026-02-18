@@ -21,10 +21,7 @@ $(BUILD_DIR)/%.o: %.cpp
 
 -include $(DEPS)
 
-clean_all:
-	rm -rf $(BUILD_DIR) $(TARGET)
-
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR) $(TARGET)
 
 .PHONY: all clean

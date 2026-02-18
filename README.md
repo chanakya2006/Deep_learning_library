@@ -520,3 +520,94 @@ layers.save_layer(ofstream &out) -> tag (type char[SIZE_OF_LAYER_CHAR_TAG]) + te
 
 tensor.save_tensor(ofstream &out) -> size_of_shape (type size_t) + shape.data() (type vector<int>) + size_of_data (type size_t) + data.data() (type vector<float>) + requires_grad (type bool)
 ```
+
+XOR example with model saving and loading and with csv file loader :
+
+```
+In XOR.csv:
+
+0,0,0
+0,1,1
+1,0,1
+1,1,0
+
+```
+
+```
+  Sequential model;
+
+  model.add(make_unique<Dense>(2, 4));
+  model.add(make_unique<Tanh>());
+  model.add(make_unique<Dense>(4, 1));
+  model.add(make_unique<Sigmoid>());
+
+  vector<Tensor *> parameters = model.get_parameters();
+
+  Binary_cross_entropy bce;
+
+  Adam adam;
+
+  csv_loader loader("XOR.csv", 2);
+
+  for (int epoch = 0; epoch < 10000; epoch++) {
+    float epoch_loss = 0;
+
+    for (size_t i = 0; i < loader.num_of_rows; i++) {
+
+      ::data input_and_pred = loader.load_next();
+
+      Tensor x({1, 2}, input_and_pred.input, false);
+      Tensor y_true({1, 1}, input_and_pred.output, false);
+
+      Tensor y_pred = model.forward(x);
+
+      Tensor loss = bce.apply(y_pred, y_true);
+      epoch_loss += loss.get_data()[0];
+
+      loss.backward();
+      adam.step(parameters);
+      adam.zero_grad(parameters);
+    }
+
+    loader.reset();
+
+    if (epoch % 200 == 0) {
+      cout << "Epoch " << epoch << " loss = " << epoch_loss / loader.num_of_rows
+           << endl;
+    }
+  }
+
+  // Saving model
+  model.save("temp.dat");
+
+  // Loading the same model from file
+  Sequential model_copy = load_Sequential_model("temp.dat");
+
+  // Model prediction for [0,0]
+  Tensor x({1, 2}, {0, 0}, false);
+
+  Tensor y_pred = model_copy.forward(x);
+
+  cout << "[0,0] -> " << y_pred.get_data()[0] << " -> ~0" << endl;
+
+  // Model prediction for [0,1]
+  x = Tensor({1, 2}, {0, 1}, false);
+
+  y_pred = model_copy.forward(x);
+
+  cout << "[0,1] -> " << y_pred.get_data()[0] << " -> ~1" << endl;
+
+  // Model prediction for [1,0]
+  x = Tensor({1, 2}, {1, 0}, false);
+
+  y_pred = model_copy.forward(x);
+
+  cout << "[1,0] -> " << y_pred.get_data()[0] << " -> ~1" << endl;
+
+  // Model prediction for [1,1]
+  x = Tensor({1, 2}, {1, 1}, false);
+
+  y_pred = model_copy.forward(x);
+
+  cout << "[1,1] -> " << y_pred.get_data()[0] << " -> ~0" << endl;
+```
