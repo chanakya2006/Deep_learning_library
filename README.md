@@ -508,3 +508,15 @@ XOR example using loading and saving model from binary
   cout << "[1,1] -> " << y_pred.get_data()[0] << " -> ~0" << endl;
   
 ```
+
+The data is stored in the following format :
+
+```
+Sequential save(string file) -> number_of_layers (type size_t) + layers.save_layer(ofstream &out)
+
+layers.save_layer(ofstream &out) -> tag (type char[SIZE_OF_LAYER_CHAR_TAG]) + tensors.save_tensor(ofstream &out) 
+(a special case of this is leakyrelu where the following is stored : tag + alpha (type float) )
+(the tag is used to determine which type of layer will be read, hence we know beforehand how many tensors will come after the tag if any (in case of relu and similar layers there is no data to be loaded, just initiation of the layer, on the other hand leakyrelu stores a float type variable) )
+
+tensor.save_tensor(ofstream &out) -> size_of_shape (type size_t) + shape.data() (type vector<int>) + size_of_data (type size_t) + data.data() (type vector<float>) + requires_grad (type bool)
+```

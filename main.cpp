@@ -91,16 +91,11 @@ int main() {
   return 0;
 }
 
-// As each layer has different number of tensor we must know beforehand what
-// type layer we are going to read, so when saving the layer I write the type of
-// layer it is (tag) and when reading i first check which type of layer it is
-// then allocate tensors appropriately
-
 // Implement :
 // RSMprop
 // Save and load model from a raw binary file
 
-// loading functions of model, layers, and tensors are defined in helpers.hpp
-// and Implementend in helpers.cpp
+// loading functions of model, layers, and tensors are defined in
+// helpers.hpp and Implementend in helpers.cpp
 //
 // If needed move them to appropriate files
