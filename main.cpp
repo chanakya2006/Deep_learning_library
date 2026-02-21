@@ -1,4 +1,5 @@
 #include "loss/bce.hpp"
+#include "loss/mse.hpp"
 #include "model/sequential.hpp"
 #include "nn/activations.hpp"
 #include "nn/dense.hpp"
@@ -17,36 +18,59 @@
 
 using namespace std;
 
+vector<float> label_to_encoding(float label) {
+  vector<float> out(10, 0);
+  out[label] = 1;
+  return out;
+}
+
+int encoding_to_label(vector<float> encoding) {
+  for (size_t i = 0; i < encoding.size(); i++) {
+    if (encoding[i] == 1)
+      return i;
+  }
+  return 0;
+}
+
 void train() {
   Sequential model;
 
-  model.add(make_unique<Dense>(2, 4));
-  model.add(make_unique<Tanh>());
-  model.add(make_unique<Dense>(4, 1));
-  model.add(make_unique<Sigmoid>());
+  model.add(make_unique<Dense>(783, 256));
+  model.add(make_unique<LeakyReLU>(0.1));
+  model.add(make_unique<Dense>(256, 128));
+  model.add(make_unique<LeakyReLU>(0.1));
+  model.add(make_unique<Dense>(128, 10));
+  model.add(make_unique<LeakyReLU>(0.1));
+  model.add(make_unique<Softmax>());
 
   vector<Tensor *> parameters = model.get_parameters();
 
-  Binary_cross_entropy bce;
+  MSE mse(10);
 
   Adam adam;
 
-  csv_loader loader("XOR.csv", 2);
+  csv_loader loader("mnist_train.csv", 2);
 
-  for (int epoch = 0; epoch < 10000; epoch++) {
+  for (int epoch = 0; epoch < 1; epoch++) {
     float epoch_loss = 0;
 
-    for (size_t i = 0; i < loader.num_of_rows; i++) {
+    for (size_t i = 0; i < loader.num_of_rows / 60; i++) {
 
-      ::data input_and_pred = loader.load_next();
+      ::data pred_and_input = loader.load_next();
+      ::data input_and_pred{pred_and_input.output,
+                            label_to_encoding(pred_and_input.input[0])};
 
-      Tensor x({1, 2}, input_and_pred.input, false);
-      Tensor y_true({1, 1}, input_and_pred.output, false);
+      Tensor x({1, int(input_and_pred.input.size())}, input_and_pred.input,
+               false);
+      Tensor y_true({1, int(input_and_pred.output.size())},
+                    input_and_pred.output, false);
 
       Tensor y_pred = model.forward(x);
 
-      Tensor loss = bce.apply(y_pred, y_true);
+      Tensor loss = mse.apply(y_pred, y_true);
       epoch_loss += loss.get_data()[0];
+
+      cout << "It ran :) " << i << endl;
 
       loss.backward();
       adam.step(parameters);
@@ -56,13 +80,13 @@ void train() {
     loader.reset();
 
     if (epoch % 200 == 0) {
-      cout << "Epoch " << epoch << " loss = " << epoch_loss / loader.num_of_rows
-           << endl;
+      cout << "Epoch " << epoch
+           << " loss = " << int(epoch_loss / (loader.num_of_rows / 60)) << endl;
     }
   }
 
   // Saving model
-  model.save("temp.dat");
+  // model.save("temp.dat");
 }
 
 void predict() {
@@ -99,20 +123,8 @@ void predict() {
 }
 
 int main() {
-  // train();
+  train();
   // predict();
-
-  // csv_loader loader("mnist_train.csv", 1);
-  // cout << "Number of rows : " << loader.num_of_rows << endl;
-  //::data input_and_pred = loader.load_next();
-  // cout << "End !" << endl;
-  // return 0;
-
-  Tensor t{{1, 4}, {1.1, 2.2, 0.2, -1.7}, true};
-  Tensor out = t.softmax();
-  Tensor final = out.sum();
-  final.backward();
-  cout << "End !! " << endl;
   return 0;
 }
 

@@ -1,6 +1,7 @@
 #include "nn/activations.hpp"
 #include "nn/layer.hpp"
 #include "tensor/tensor.hpp"
+#include <fstream>
 
 Tensor ReLU::forward(Tensor &input) { return input.relu(); }
 
@@ -30,5 +31,12 @@ Tensor Tanh::forward(Tensor &input) { return input.tanh(); }
 
 void Tanh::save_layer(std::ofstream &out) {
   char tag[SIZE_OF_LAYER_CHAR_TAG] = "tanh";
+  out.write(reinterpret_cast<const char *>(tag), SIZE_OF_LAYER_CHAR_TAG);
+}
+
+Tensor Softmax::forward(Tensor &input) { return input.softmax(); }
+
+void Softmax::save_layer(std::ofstream &out) {
+  char tag[SIZE_OF_LAYER_CHAR_TAG] = "softmax";
   out.write(reinterpret_cast<const char *>(tag), SIZE_OF_LAYER_CHAR_TAG);
 }

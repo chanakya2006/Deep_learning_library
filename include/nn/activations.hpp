@@ -29,3 +29,9 @@ public:
   Tensor forward(Tensor &input) override;
   void save_layer(std::ofstream &out) override;
 };
+
+class Softmax : public Layer {
+public:
+  Tensor forward(Tensor &input) override;
+  void save_layer(std::ofstream &out) override;
+};
