@@ -57,6 +57,7 @@ public:
   Tensor sigmoid();
   Tensor leaky_relu(float alpha);
   Tensor tanh();
+  Tensor softmax();
   Tensor log_on_Tensor();
 
   Tensor sum();

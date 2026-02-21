@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <numeric>
+#include <ratio>
 #include <stdexcept>
 #include <vector>
 
@@ -320,6 +321,44 @@ Tensor Tensor::tanh() {
       Tensor &A = *self.parents[0];
       for (size_t i = 0; i < A.grad.size(); i++) {
         A.grad[i] += (1 - std::pow(self.data[i], 2)) * self.grad[i];
+      }
+    };
+  }
+
+  return ans;
+}
+
+Tensor Tensor::softmax() {
+  Tensor ans{shape, {}, requires_grad};
+
+  vector<float> raised_to(data.size());
+  float sum_of_denominator = 0;
+
+  for (size_t i = 0; i < data.size(); i++) {
+    float e_z = exp(data[i]);
+    raised_to[i] = e_z;
+    sum_of_denominator += e_z;
+  }
+
+  vector<float> &ans_data_pointer = *ans.get_data_pointer();
+  for (size_t i = 0; i < data.size(); i++) {
+    ans_data_pointer[i] = raised_to[i] / sum_of_denominator;
+  }
+
+  if (requires_grad) {
+    ans.parents = {this};
+    // To understand how the derivate of softmax works visit :
+    // https://medium.com/data-science/derivative-of-the-softmax-function-and-the-categorical-cross-entropy-loss-ffceefc081d1
+    ans.backward_fn = [](Tensor &self) {
+      Tensor &A = *self.parents[0];
+      for (size_t i = 0; i < A.grad.size(); i++) {
+        for (size_t j = 0; j < self.grad.size(); j++) {
+          if (i == j) {
+            A.grad[i] += (self.data[i] * (1 - self.data[i])) * self.grad[j];
+          } else {
+            A.grad[i] += -(self.data[i] * self.data[j]) * self.grad[j];
+          }
+        }
       }
     };
   }

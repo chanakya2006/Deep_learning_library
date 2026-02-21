@@ -12,11 +12,12 @@
 #include <iostream>
 #include <limits>
 #include <memory>
+#include <ratio>
 #include <vector>
 
 using namespace std;
 
-int main() {
+void train() {
   Sequential model;
 
   model.add(make_unique<Dense>(2, 4));
@@ -62,7 +63,9 @@ int main() {
 
   // Saving model
   model.save("temp.dat");
+}
 
+void predict() {
   // Loading the same model from file
   Sequential model_copy = load_Sequential_model("temp.dat");
 
@@ -93,7 +96,23 @@ int main() {
   y_pred = model_copy.forward(x);
 
   cout << "[1,1] -> " << y_pred.get_data()[0] << " -> ~0" << endl;
+}
 
+int main() {
+  // train();
+  // predict();
+
+  // csv_loader loader("mnist_train.csv", 1);
+  // cout << "Number of rows : " << loader.num_of_rows << endl;
+  //::data input_and_pred = loader.load_next();
+  // cout << "End !" << endl;
+  // return 0;
+
+  Tensor t{{1, 4}, {1.1, 2.2, 0.2, -1.7}, true};
+  Tensor out = t.softmax();
+  Tensor final = out.sum();
+  final.backward();
+  cout << "End !! " << endl;
   return 0;
 }
 
