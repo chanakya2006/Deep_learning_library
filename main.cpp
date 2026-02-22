@@ -1,4 +1,5 @@
 #include "loss/bce.hpp"
+#include "loss/mce.hpp"
 #include "loss/mse.hpp"
 #include "model/sequential.hpp"
 #include "nn/activations.hpp"
@@ -25,27 +26,36 @@ vector<float> label_to_encoding(float label) {
 }
 
 int encoding_to_label(vector<float> encoding) {
+  float max_value = 0;
+  int max_value_at = 0;
   for (size_t i = 0; i < encoding.size(); i++) {
-    if (encoding[i] == 1)
-      return i;
+    if (encoding[i] > max_value) {
+      max_value = encoding[i];
+      max_value_at = i;
+    }
   }
-  return 0;
+  return max_value_at;
 }
 
 void train() {
+  bool is_model_saved = false;
+
   Sequential model;
 
-  model.add(make_unique<Dense>(783, 256));
-  model.add(make_unique<LeakyReLU>(0.1));
-  model.add(make_unique<Dense>(256, 128));
-  model.add(make_unique<LeakyReLU>(0.1));
-  model.add(make_unique<Dense>(128, 10));
-  model.add(make_unique<LeakyReLU>(0.1));
-  model.add(make_unique<Softmax>());
+  if (is_model_saved) {
+    model = load_Sequential_model("temp.dat");
+  } else {
+    model.add(make_unique<Dense>(783, 256));
+    model.add(make_unique<Tanh>());
+    model.add(make_unique<Dense>(256, 128));
+    model.add(make_unique<Tanh>());
+    model.add(make_unique<Dense>(128, 10));
+    model.add(make_unique<Softmax>());
+  }
 
   vector<Tensor *> parameters = model.get_parameters();
 
-  MSE mse(10);
+  MCE mce(10);
 
   Adam adam;
 
@@ -54,23 +64,24 @@ void train() {
   for (int epoch = 0; epoch < 1; epoch++) {
     float epoch_loss = 0;
 
-    for (size_t i = 0; i < loader.num_of_rows / 60; i++) {
+    for (size_t i = 0; i < loader.num_of_rows; i++) {
 
-      ::data pred_and_input = loader.load_next();
-      ::data input_and_pred{pred_and_input.output,
-                            label_to_encoding(pred_and_input.input[0])};
+      ::data output_and_input = loader.load_next();
+      ::data input_and_output{output_and_input.output,
+                              label_to_encoding(output_and_input.input[0])};
 
-      Tensor x({1, int(input_and_pred.input.size())}, input_and_pred.input,
+      Tensor x({1, int(input_and_output.input.size())}, input_and_output.input,
                false);
-      Tensor y_true({1, int(input_and_pred.output.size())},
-                    input_and_pred.output, false);
+      Tensor y_true({1, int(input_and_output.output.size())},
+                    input_and_output.output, false);
 
       Tensor y_pred = model.forward(x);
 
-      Tensor loss = mse.apply(y_pred, y_true);
+      Tensor loss = mce.apply(y_pred, y_true);
       epoch_loss += loss.get_data()[0];
 
-      cout << "It ran :) " << i << endl;
+      cout << "Row : " << i << "\tThe loss was : " << loss.get_data()[0]
+           << endl;
 
       loss.backward();
       adam.step(parameters);
@@ -80,51 +91,51 @@ void train() {
     loader.reset();
 
     if (epoch % 200 == 0) {
-      cout << "Epoch " << epoch
-           << " loss = " << int(epoch_loss / (loader.num_of_rows / 60)) << endl;
+      cout << "Epoch " << epoch << " loss = " << epoch_loss / loader.num_of_rows
+           << endl;
     }
   }
 
   // Saving model
-  // model.save("temp.dat");
+  model.save("temp.dat");
 }
 
-void predict() {
-  // Loading the same model from file
-  Sequential model_copy = load_Sequential_model("temp.dat");
+float get_accuracy() {
+  size_t sample_size = 6000;
 
-  // Model prediction for [0,0]
-  Tensor x({1, 2}, {0, 0}, false);
+  Sequential model = load_Sequential_model("temp.dat");
 
-  Tensor y_pred = model_copy.forward(x);
+  csv_loader loader("mnist_train.csv", 2);
 
-  cout << "[0,0] -> " << y_pred.get_data()[0] << " -> ~0" << endl;
+  float correct = 0;
 
-  // Model prediction for [0,1]
-  x = Tensor({1, 2}, {0, 1}, false);
+  for (size_t i = 0; i < sample_size; i++) {
+    ::data output_and_input = loader.load_next();
+    ::data input_and_output{output_and_input.output,
+                            label_to_encoding(output_and_input.input[0])};
 
-  y_pred = model_copy.forward(x);
+    Tensor x{
+        {1, int(input_and_output.input.size())}, input_and_output.input, false};
+    Tensor y_pred = model.forward(x);
 
-  cout << "[0,1] -> " << y_pred.get_data()[0] << " -> ~1" << endl;
+    int pred_num = encoding_to_label(y_pred.get_data());
+    int true_num = output_and_input.input[0];
 
-  // Model prediction for [1,0]
-  x = Tensor({1, 2}, {1, 0}, false);
+    if (pred_num == true_num) {
+      correct++;
+    }
+  }
+  loader.reset();
 
-  y_pred = model_copy.forward(x);
-
-  cout << "[1,0] -> " << y_pred.get_data()[0] << " -> ~1" << endl;
-
-  // Model prediction for [1,1]
-  x = Tensor({1, 2}, {1, 1}, false);
-
-  y_pred = model_copy.forward(x);
-
-  cout << "[1,1] -> " << y_pred.get_data()[0] << " -> ~0" << endl;
+  return float(correct / sample_size) * 100;
 }
 
 int main() {
-  train();
-  // predict();
+  // train();
+
+  float accuracy = get_accuracy();
+  cout << "accuracy :  " << accuracy << endl;
+
   return 0;
 }
 

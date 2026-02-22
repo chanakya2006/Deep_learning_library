@@ -334,8 +334,10 @@ Tensor Tensor::softmax() {
   vector<float> raised_to(data.size());
   float sum_of_denominator = 0;
 
+  float e_z;
+
   for (size_t i = 0; i < data.size(); i++) {
-    float e_z = exp(data[i]);
+    e_z = exp(data[i]);
     raised_to[i] = e_z;
     sum_of_denominator += e_z;
   }

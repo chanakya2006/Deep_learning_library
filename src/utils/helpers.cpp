@@ -79,6 +79,11 @@ unique_ptr<Layer> load_layer(std::ifstream &in) {
     return tanh;
   }
 
+  else if (strcmp(tag, "softmax") == 0) {
+    unique_ptr<Softmax> softmax = make_unique<Softmax>();
+    return softmax;
+  }
+
   return nullptr; // Throw corrupted file exception here
 }
 
