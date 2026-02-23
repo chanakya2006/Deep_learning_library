@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <fstream>
 #include <memory>
+#include <stdexcept>
 #include <utility>
 #include <vector>
 
@@ -32,6 +33,10 @@ vector<Tensor *> Sequential::get_parameters() {
 
 void Sequential::save(string file) {
   std::ofstream out(file, std::ios::binary);
+
+  if (!out.is_open()) {
+    throw std::runtime_error("File not found or permission denied : " + file);
+  }
 
   // writing the number of layers
   size_t num_of_layer = layers.size();

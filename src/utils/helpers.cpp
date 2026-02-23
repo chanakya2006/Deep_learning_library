@@ -9,6 +9,7 @@
 #include <fstream>
 #include <memory>
 #include <sstream>
+#include <stdexcept>
 
 std::vector<Tensor *> get_all_parameters(std::vector<Layer *> &layers) {
   std::vector<Tensor *> params;
@@ -91,6 +92,10 @@ Sequential load_Sequential_model(string file) {
   Sequential model;
 
   std::ifstream in(file, std::ios::binary);
+
+  if (!in.is_open()) {
+    throw std::runtime_error("File not found or permission denied : " + file);
+  }
 
   // Reading the number of layers
   size_t num_of_layers;

@@ -19,6 +19,10 @@
 
 using namespace std;
 
+string path_to_model = "trained_models/MNIST_sequential.dat";
+string path_to_dataset = "datasets/mnist_train.csv";
+bool use_saved_model = false;
+
 vector<float> label_to_encoding(float label) {
   vector<float> out(10, 0);
   out[label] = 1;
@@ -38,12 +42,10 @@ int encoding_to_label(vector<float> encoding) {
 }
 
 void train() {
-  bool is_model_saved = false;
-
   Sequential model;
 
-  if (is_model_saved) {
-    model = load_Sequential_model("temp.dat");
+  if (use_saved_model) {
+    model = load_Sequential_model(path_to_model);
   } else {
     model.add(make_unique<Dense>(783, 256));
     model.add(make_unique<Tanh>());
@@ -59,9 +61,9 @@ void train() {
 
   Adam adam;
 
-  csv_loader loader("mnist_train.csv", 2);
+  csv_loader loader(path_to_dataset, 2);
 
-  for (int epoch = 0; epoch < 1; epoch++) {
+  for (int epoch = 0; epoch < 2; epoch++) {
     float epoch_loss = 0;
 
     for (size_t i = 0; i < loader.num_of_rows; i++) {
@@ -97,15 +99,15 @@ void train() {
   }
 
   // Saving model
-  model.save("temp.dat");
+  model.save(path_to_model);
 }
 
 float get_accuracy() {
   size_t sample_size = 6000;
 
-  Sequential model = load_Sequential_model("temp.dat");
+  Sequential model = load_Sequential_model(path_to_model);
 
-  csv_loader loader("mnist_train.csv", 2);
+  csv_loader loader(path_to_dataset, 2);
 
   float correct = 0;
 
@@ -130,8 +132,11 @@ float get_accuracy() {
   return float(correct / sample_size) * 100;
 }
 
+// add the above code to README file
+// prettify README file
+
 int main() {
-  // train();
+  train();
 
   float accuracy = get_accuracy();
   cout << "accuracy :  " << accuracy << endl;

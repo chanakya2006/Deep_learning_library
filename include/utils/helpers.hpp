@@ -4,6 +4,7 @@
 #include "tensor/tensor.hpp"
 #include <fstream>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -30,6 +31,11 @@ public:
 
   csv_loader(string file, size_t split_at_)
       : in(std::ifstream(file)), split_at(split_at_) {
+
+    if (!in.is_open()) {
+      throw std::runtime_error("File not found or permission denied : " + file);
+    }
+
     string line;
     while (std::getline(in, line)) {
       num_of_rows++;
