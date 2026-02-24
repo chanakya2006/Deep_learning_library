@@ -92,10 +92,8 @@ void train() {
 
     loader.reset();
 
-    if (epoch % 200 == 0) {
-      cout << "Epoch " << epoch << " loss = " << epoch_loss / loader.num_of_rows
-           << endl;
-    }
+    cout << "Epoch " << epoch << " loss = " << epoch_loss / loader.num_of_rows
+         << endl;
   }
 
   // Saving model
@@ -132,10 +130,13 @@ float get_accuracy() {
   return float(correct / sample_size) * 100;
 }
 
-// add the above code to README file
-// prettify README file
-
 int main() {
+
+  // To download the mnist_train.csv dataset please visit
+  // https://www.kaggle.com/datasets/oddrationale/mnist-in-csv?select=mnist_train.csv
+
+  // NOTE : Please be sure to remove the first row in the datatset
+
   train();
 
   float accuracy = get_accuracy();
